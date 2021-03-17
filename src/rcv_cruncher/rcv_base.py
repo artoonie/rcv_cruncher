@@ -37,10 +37,10 @@ class RCV(rcv_reporting.RCV_Reporting, abc.ABC):
             try:
                 rcv_obj.update_split_info(split_info)
                 splits.append({
-                    'variant': rcv_obj.get_variant_name(),
-                    'variant_group': rcv_obj.get_variant_group(),
-                    'contest_stats_df': rcv_obj.get_contest_stats_df(),
-                    'tabulation_stats_df': rcv_obj.get_tabulation_stats_df()
+                    'variant': RCV.get_variant_name(rcv_obj),
+                    'variant_group': RCV.get_variant_group(rcv_obj),
+                    'contest_stats_df': RCV.get_contest_stats_df(rcv_obj),
+                    'tabulation_stats_df': RCV.get_tabulation_stats_df(rcv_obj)
                 })
             except Exception:
                 error_splits.append(split_info['split_id'])
@@ -221,7 +221,7 @@ class RCV(rcv_reporting.RCV_Reporting, abc.ABC):
         self._split_info_list = []
         self._split_set_input = None
         self._split_set_actual = None
-        self._make_split_info_list(ctx)
+        self._make_split_info_list()
 
         # RUN
         self._run_contest()

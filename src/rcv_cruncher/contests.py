@@ -547,6 +547,52 @@ def write_input_dir(results_dir, output_config, start_time, end_time):
     shutil.copy2(output_config['contest_set_file_path'], log_contest_set_fname)
 
 
+def split_accounting_check(all_ballot_stats, split_stat_list):
+
+    check_cols = [
+        "split_first_round_overvote",
+        "split_ranked_single",
+        "split_ranked_multiple",
+        "split_ranked_3_or_more",
+        #"split_mean_rankings_used",
+        #"split_median_rankings_used",
+        "split_total_fully_ranked",
+        "split_includes_duplicate_ranking",
+        "split_includes_skipped_ranking",
+        "split_total_irregular",
+        "split_total_ballots",
+        "split_total_ballots_with_overvote",
+        'split_total_undervote',
+        "split_total_pretally_exhausted",
+        'split_total_posttally_exhausted',
+        'split_total_posttally_exhausted_by_overvote',
+        'split_total_posttally_exhausted_by_skipped_rankings',
+        'split_total_posttally_exhausted_by_abstention',
+        'split_total_posttally_exhausted_by_rank_limit',
+        'split_total_posttally_exhausted_by_duplicate_rankings'
+    ]
+
+    combined_splits = pd.concat(split_stat_list, axis=0, ignore_index=True, sort=False)
+    split_fields = set(combined_splits['split_field'])
+
+    errors = []
+    for field in split_fields:
+
+        summed_splits = combined_splits.loc[combined_splits['split_field'] == field, check_cols].sum()
+
+        for col in check_cols:
+
+            all_ballot_col_name = col.split('split_')[1]
+            x = round(float(all_ballot_stats[all_ballot_col_name].item()), 1)
+            y = round(float(summed_splits[col].item()), 1)
+            if x != y:
+                errors.append(f'{field}_{col} {x}:{y}')
+
+    if errors:
+        print(errors)
+        raise RuntimeError
+
+
 def crunch_contest_set(contest_set, output_config, path_to_output, fresh_output=False):
 
     start_time = datetime.datetime.now()
@@ -606,11 +652,11 @@ def crunch_contest_set(contest_set, output_config, path_to_output, fresh_output=
         if output_config.get('candidate_details') and crunch_returns.get('candidate_details'):
             candidate_details_dfs.append(crunch_returns['candidate_details'])
 
-        if output_config.get('per_rcv_type_stats') and crunch_returns.get('tabulation_stats_df'):
+        if output_config.get('per_rcv_type_stats') and 'tabulation_stats_df' in crunch_returns:
             variant = crunch_returns['variant']
             rcv_variant_stats_df_dict[variant].append(crunch_returns['tabulation_stats_df'])
 
-        if output_config.get('per_rcv_group_stats') and crunch_returns.get('contest_stats_df'):
+        if output_config.get('per_rcv_group_stats') and 'contest_stats_df' in crunch_returns:
             variant_group = crunch_returns['variant_group']
             rcv_group_stats_df_dict[variant_group].append(crunch_returns['contest_stats_df'])
 
@@ -627,23 +673,24 @@ def crunch_contest_set(contest_set, output_config, path_to_output, fresh_output=
 
             # SPLIT RESULTS CONTAINERS
             split_rcv_variant_stats_df_dict = {variant_name: [] for variant_name in rcv_variants.get_rcv_dict().keys()}
-            split_rcv_group_stats_df_dict = {variant_group: [] for variant_group in
-                                             set(g.variant_group() for g in rcv_variants.get_rcv_dict().values())}
 
             for split_stat in split_stats:
 
-                if output_config.get('per_rcv_type_stats') and split_stat.get('tabulation_stats_df'):
+                if output_config.get('per_rcv_type_stats') and 'tabulation_stats_df' in split_stat:
                     variant = split_stat['variant']
                     split_rcv_variant_stats_df_dict[variant].append(split_stat['tabulation_stats_df'])
                     allsplit_rcv_variant_stats_df_dict[variant].append(split_stat['tabulation_stats_df'])
 
-                if output_config.get('per_rcv_group_stats') and split_stat.get('contest_stats_df'):
+                if output_config.get('per_rcv_group_stats') and 'contest_stats_df' in split_stat:
                     variant_group = split_stat['variant_group']
-                    split_rcv_group_stats_df_dict[variant_group].append(split_stat['contest_stats_df'])
                     allsplit_rcv_group_stats_df_dict[variant_group].append(split_stat['contest_stats_df'])
 
+            for k in split_rcv_variant_stats_df_dict:
+                if split_rcv_variant_stats_df_dict[k]:
+                    split_accounting_check(crunch_returns['tabulation_stats_df'], split_rcv_variant_stats_df_dict[k])
+
             write_aggregated_stats(split_contest_path, output_config,
-                                   split_rcv_group_stats_df_dict, split_rcv_variant_stats_df_dict,
+                                   [], split_rcv_variant_stats_df_dict,
                                    [], quiet=True)
 
         # remove cvr from mem
