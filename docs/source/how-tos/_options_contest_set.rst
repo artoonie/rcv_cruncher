@@ -4,10 +4,10 @@ Election
 --------
 
 * ``state`` (str; default empty): State or broader jurisdiction.
-* ``jurisdiction`` (str; required; default empty): Jurisdiction name. Required. With date and office it forms the contest id used in output file names.
-* ``office`` (str; required; default empty): Office being elected. Required. Not passed to the parser; parsers that need an office take it through extra_parser_args.
-* ``year`` (str; default empty): Election year.
-* ``date`` (str; required; default empty): Election date, mm/dd/yyyy. Required.
+* ``jurisdiction`` (str; default empty): Jurisdiction name. With date (or year) and office it forms the contest id used in output file names; empty parts are skipped.
+* ``office`` (str; default empty): Office being elected. Used in the contest id. Not passed to the parser; parsers that need an office take it through extra_parser_args.
+* ``year`` (str; default empty): Election year. Used in the contest id only when date is empty.
+* ``date`` (str; default empty): Election date, mm/dd/yyyy. Used in the contest id; year is used instead when date is empty.
 * ``notes`` (str; default empty): Free text stored with the contest.
 * ``ignore_contest`` (bool; default FALSE): Skip this row when running the batch.
 

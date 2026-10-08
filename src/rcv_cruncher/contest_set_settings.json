@@ -9,30 +9,27 @@
         "type": "str",
         "default": "",
         "group": "Election",
-        "required": true,
-        "description": "Jurisdiction name. Required. With date and office it forms the contest id used in output file names."
+        "description": "Jurisdiction name. With date (or year) and office it forms the contest id used in output file names; empty parts are skipped."
     },
     "office": {
         "type": "str",
         "default": "",
         "group": "Election",
-        "required": true,
-        "description": "Office being elected. Required. Not passed to the parser; parsers that need an office take it through extra_parser_args."
+        "description": "Office being elected. Used in the contest id. Not passed to the parser; parsers that need an office take it through extra_parser_args."
     },
     "year": {
         "type": "str",
         "default": "",
         "group": "Election",
         "placeholder": "yyyy",
-        "description": "Election year."
+        "description": "Election year. Used in the contest id only when date is empty."
     },
     "date": {
         "type": "str",
         "default": "",
         "group": "Election",
-        "required": true,
         "placeholder": "mm/dd/yyyy",
-        "description": "Election date, mm/dd/yyyy. Required."
+        "description": "Election date, mm/dd/yyyy. Used in the contest id; year is used instead when date is empty."
     },
     "notes": {
         "type": "str",
