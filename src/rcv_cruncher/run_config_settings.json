@@ -1,24 +1,120 @@
 {
-    "convert_cvr_rank_format":                  { "default": false},
-    "convert_cvr_candidate_format":             { "default": false},
-    "per_rcv_type_stats":                       { "default": false},
-    "per_rcv_group_stats":                      { "default": false},
-    "per_rcv_group_stats_fvDBfmt":              { "default": false},
-    "candidate_details":                        { "default": false},
-    "round_by_round_table":                     { "default": false},
-    "round_by_round_json":                      { "default": false},
-    "ballot_stats_debug":                       { "default": false},
-    "annotated_cvr_rank_format":                { "default": false},
-    "cvr_ballot_allocation_rank_format":        { "default": false},
-    "cvr_ballot_allocation_candidate_format":   { "default": false},
-    "first_choice_to_finalist":                 { "default": false},
-    "condorcet":                                { "default": false},
-    "first_second_choices":                     { "default": false},
-    "cumulative_rankings":                      { "default": false},
-    "rank_usage":                               { "default": false},
-    "crossover_support":                        { "default": false},
-    "winner_final_pile_rank_distribution_table":{ "default": false},
-    "candidate_rank_usage":                     { "default": false},
-    "split_stats":                              { "default": false},
-    "cvr_path_root":                            { "default": ""}
+    "cvr_path_root": {
+        "default": "",
+        "group": "Paths",
+        "description": "Directory that every cvr_path in contest_set.csv is relative to."
+    },
+
+    "round_by_round_table":  {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "Round-by-round vote counts, transfers, and active percentages per candidate, as csv."
+    },
+    "round_by_round_json": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "Round-by-round results as json in the RCVis format."
+    },
+    "first_choice_to_finalist": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "For each first-choice candidate, where those ballots ended up among the finalists."
+    },
+    "condorcet": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "Head-to-head counts and percentages between every pair of candidates, plus the Condorcet winner."
+    },
+    "first_second_choices": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "Distribution of second choices for each first-choice candidate."
+    },
+    "cumulative_rankings": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "Cumulative count and percentage of ballots ranking each candidate at or above each rank."
+    },
+    "rank_usage": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "How many rankings ballots used."
+    },
+    "crossover_support": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "For each candidate's first-choice voters, how many also ranked each other candidate."
+    },
+    "split_stats": {
+        "default": false,
+        "group": "Per-contest tables",
+        "description": "Contest statistics recomputed for each value of the contest's split_fields columns."
+    },
+
+    "per_rcv_type_stats": {
+        "default": false,
+        "group": "Aggregate statistics",
+        "description": "Contest statistics for all contests, one csv per tabulation variant."
+    },
+    "per_rcv_group_stats": {
+        "default": false,
+        "group": "Aggregate statistics",
+        "description": "Contest statistics for all contests, one csv for single-winner and one for multi-winner contests."
+    },
+    "per_rcv_group_stats_fvDBfmt": {
+        "default": false,
+        "group": "Aggregate statistics",
+        "description": "The per_rcv_group_stats csvs with columns reordered to match the FairVote database import format."
+    },
+    "candidate_details": {
+        "default": false,
+        "group": "Aggregate statistics",
+        "description": "One csv across all contests with each candidate's round-by-round vote counts and outcome."
+    },
+    "winner_final_pile_rank_distribution_table": {
+        "default": false,
+        "group": "Aggregate statistics",
+        "description": "One csv across single-winner contests: at which rank the winner's final-round ballots ranked the winner, as marked and after rules are applied."
+    },
+    "candidate_rank_usage": {
+        "default": false,
+        "group": "Aggregate statistics",
+        "description": "One csv across all contests with how many rankings each candidate's first-choice voters used."
+    },
+
+    "convert_cvr_rank_format": {
+        "default": false,
+        "group": "CVR conversion",
+        "description": "Write each CVR as a rank-column csv (one column per rank)."
+    },
+    "convert_cvr_candidate_format": {
+        "default": false,
+        "group": "CVR conversion",
+        "description": "Write each CVR as a candidate-column csv (one column per candidate holding the rank)."
+    },
+
+    "annotated_cvr_rank_format": {
+        "default": false,
+        "group": "Debug",
+        "description": "Write each CVR with the internal per-ballot tracking columns added. Large; for debugging."
+    },
+
+    "ballot_stats_debug": {
+        "default": false,
+        "group": "Debug",
+        "deprecated": true,
+        "description": "No longer produced. Accepted so that old run_config.json files still load."
+    },
+    "cvr_ballot_allocation_rank_format": {
+        "default": false,
+        "group": "Debug",
+        "deprecated": true,
+        "description": "No longer produced. Accepted so that old run_config.json files still load."
+    },
+    "cvr_ballot_allocation_candidate_format": {
+        "default": false,
+        "group": "Debug",
+        "deprecated": true,
+        "description": "No longer produced. Accepted so that old run_config.json files still load."
+    }
 }

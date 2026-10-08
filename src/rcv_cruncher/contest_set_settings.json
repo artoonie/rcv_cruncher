@@ -1,100 +1,149 @@
 {
     "notes": {
-        "type":	"str",
-        "default": ""
+        "type": "str",
+        "default": "",
+        "group": "Contest",
+        "description": "Free text stored with the contest."
     },
     "state": {
-        "type":	"str",
-        "default": ""
+        "type": "str",
+        "default": "",
+        "group": "Contest",
+        "description": "State or broader jurisdiction."
     },
     "jurisdiction": {
         "type": "str",
-        "default": ""
+        "default": "",
+        "group": "Contest",
+        "description": "Jurisdiction name. Required. With date and office it forms the contest id used in output file names."
     },
     "year": {
-        "type":	"str",
-        "default": ""
+        "type": "str",
+        "default": "",
+        "group": "Contest",
+        "description": "Election year."
     },
     "date": {
-        "type":	"str",
-        "default": ""
+        "type": "str",
+        "default": "",
+        "group": "Contest",
+        "description": "Election date, mm/dd/yyyy. Required."
     },
     "office": {
-        "type":	"str",
-        "default": ""
+        "type": "str",
+        "default": "",
+        "group": "Contest",
+        "description": "Office being elected. Required. Not passed to the parser; parsers that need an office take it through extra_parser_args."
     },
     "ignore_contest": {
-        "type":	"bool",
-        "default": false
+        "type": "bool",
+        "default": false,
+        "group": "Contest",
+        "description": "Skip this row when running the batch."
     },
 
+    "parser_func": {
+        "type": "func",
+        "default": "None",
+        "group": "Input",
+        "description": "Parser for the CVR file format. One of the functions registered in parsers.py."
+    },
+    "cvr_path": {
+        "type": "str",
+        "default": "None",
+        "group": "Input",
+        "description": "CVR file, or directory for parsers that read a folder, relative to cvr_path_root in run_config.json."
+    },
+    "extra_parser_args": {
+        "type": "dict",
+        "default": "",
+        "group": "Input",
+        "description": "Additional parser arguments as key=value pairs separated by semicolons, e.g. office=Mayor;filter_column=BallotStyleID."
+    },
 
-    "exhaust_on_overvote_marks": {
-        "type":	"bool",
-        "default": false
+    "rcv_type": {
+        "type": "func",
+        "default": "None",
+        "group": "Tabulation",
+        "description": "Tabulation variant: SingleWinner, Sequential, Until2, STVWholeBallot, STVFractionalBallot, or BottomsUpThresh."
     },
-    "exhaust_on_N_repeated_skipped_marks": {
-        "type":	"int",
-        "default": 0
-    },
-    "exhaust_on_duplicate_candidate_marks": {
-        "type":	"bool",
-        "default": false
-    },
-    "exclude_writein_marks": {
-        "type":	"bool",
-        "default": false
-    },
-    "combine_writein_marks": {
-        "type":	"bool",
-        "default": false
-    },
-    "treat_combined_writeins_as_exhaustable_duplicates": {
-        "type":	"bool",
-        "default": false
+    "n_winners": {
+        "type": "int",
+        "default": "1",
+        "group": "Tabulation",
+        "applies_when": {"rcv_type": ["Sequential", "STVWholeBallot", "STVFractionalBallot", "BottomsUpThresh"]},
+        "description": "Number of seats. Used by multi-winner variants only."
     },
     "multi_winner_rounds": {
-        "type":	"bool",
-        "default": true
-    },
-
-
-    "n_winners": {
-        "type":	"int",
-        "default": "1"
-    },
-    "rcv_type": {
-        "type":	"func",
-        "default": "None"
+        "type": "bool",
+        "default": true,
+        "group": "Tabulation",
+        "applies_when": {"rcv_type": ["STVWholeBallot", "STVFractionalBallot"]},
+        "description": "In STV, elect every candidate over the threshold in the same round. If false, elect only the one with the most votes and continue."
     },
     "bottoms_up_threshold": {
         "type": "float",
-        "default": "np.nan"
+        "default": "np.nan",
+        "group": "Tabulation",
+        "applies_when": {"rcv_type": ["BottomsUpThresh"]},
+        "description": "Fraction of active votes, between 0 and 1, a candidate needs to be elected in a round. Defaults to 1/(n_winners+1)."
     },
     "truncate_to": {
         "type": "int",
-        "default": "4"
+        "default": "4",
+        "group": "Tabulation",
+        "applies_when": {"rcv_type": ["STVFractionalBallot"]},
+        "description": "Decimal places that fractional surplus transfer weights are truncated to."
     },
     "writeins_eliminated_first": {
         "type": "bool",
-        "default": false
+        "default": false,
+        "group": "Tabulation",
+        "description": "Eliminate the write-in candidate in the first elimination round regardless of its vote total."
     },
-    "split_fields":{
+
+    "exhaust_on_overvote_marks": {
+        "type": "bool",
+        "default": false,
+        "group": "Ballot rules",
+        "description": "Exhaust a ballot at its first overvote (more than one candidate at one rank). If false, the overvoted rank is skipped."
+    },
+    "exhaust_on_N_repeated_skipped_marks": {
+        "type": "int",
+        "default": 0,
+        "group": "Ballot rules",
+        "description": "Exhaust a ballot after this many consecutive skipped rankings. 0 means skipped rankings never exhaust."
+    },
+    "exhaust_on_duplicate_candidate_marks": {
+        "type": "bool",
+        "default": false,
+        "group": "Ballot rules",
+        "description": "Exhaust a ballot at the first rank that repeats a candidate already ranked above. If false, the repeat is skipped."
+    },
+    "exclude_writein_marks": {
+        "type": "bool",
+        "default": false,
+        "group": "Ballot rules",
+        "description": "Ignore write-in marks entirely."
+    },
+    "combine_writein_marks": {
+        "type": "bool",
+        "default": false,
+        "group": "Ballot rules",
+        "description": "Combine all write-in candidates into one. A candidate named UWI, or whose name contains 'write', counts as a write-in."
+    },
+    "treat_combined_writeins_as_exhaustable_duplicates": {
+        "type": "bool",
+        "default": false,
+        "group": "Ballot rules",
+        "applies_when": {"combine_writein_marks": [true]},
+        "description": "When write-ins are combined, two write-in marks on one ballot count as a duplicate ranking for the exhaustion rule."
+    },
+
+    "split_fields": {
         "type": "list",
-        "default": ""
-    },
-
-
-    "parser_func": {
-        "type":	"func",
-        "default": "None"
-    },
-    "cvr_path": {
-        "type":	"str",
-        "default": "None"
-    },
-    "extra_parser_args":{
-        "type": "dict",
-        "default": ""
+        "default": "",
+        "group": "Split statistics",
+        "description": "CVR column names, comma-separated, to compute statistics per value of. Needs the split_stats output."
     }
 }
