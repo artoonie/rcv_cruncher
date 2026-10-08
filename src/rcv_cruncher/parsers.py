@@ -316,7 +316,7 @@ def dominion5_2(cvr_path: Union[str, pathlib.Path], office: str) -> Dict[str, Li
         for contests in json.load(f)["Sessions"]:
 
             # ballotID
-            ballotID_search = re.search("Images\\\\(.*)\*\.\*", contests["ImageMask"])
+            ballotID_search = re.search(r"Images\\(.*)\*\.\*", contests["ImageMask"])
             if ballotID_search:
                 ballotID = ballotID_search.group(1)
             else:
@@ -451,7 +451,7 @@ def dominion5_4(cvr_path: Union[str, pathlib.Path], office: str) -> Dict[str, Li
         for contests in json.load(f)["Sessions"]:
 
             # ballotID
-            ballotID_search = re.search("Images\\\\(.*)\*\.\*", contests["ImageMask"])
+            ballotID_search = re.search(r"Images\\(.*)\*\.\*", contests["ImageMask"])
             if ballotID_search:
                 ballotID = ballotID_search.group(1)
             else:
@@ -656,7 +656,7 @@ def dominion5_10(cvr_path: Union[str, pathlib.Path], office: str) -> Dict[str, L
             for contests in json.load(f)["Sessions"]:
 
                 # ballotID
-                ballotID_search = re.search("Images\\\\(.*)\*\.\*", contests["ImageMask"])
+                ballotID_search = re.search(r"Images\\(.*)\*\.\*", contests["ImageMask"])
                 if ballotID_search:
                     ballotID = ballotID_search.group(1)
                 else:
@@ -914,7 +914,7 @@ def dominion5_10_Alaska2024(cvr_path: Union[str, pathlib.Path], office: str) -> 
             for contests in json.load(f)["Sessions"]:
 
                 # ballotID
-                ballotID_search = re.search("Images\\\\(.*)\*\.\*", contests["ImageMask"])
+                ballotID_search = re.search(r"Images\\(.*)\*\.\*", contests["ImageMask"])
                 if ballotID_search:
                     ballotID = ballotID_search.group(1)
                 else:
@@ -1172,7 +1172,7 @@ def burlington2006(cvr_path: Union[str, pathlib.Path]) -> Dict[str, List]:
 
 
 def ess1(cvr_path: Union[str, pathlib.Path], office: Optional[str] = None) -> Dict[str, List]:
-    """Parser for one format of ES&S CVR files.
+    r"""Parser for one format of ES&S CVR files.
 
     :param cvr_path: Directory containing "\*allot\*.txt" files and "\*aster\*.txt" files.
     :type cvr_path: Union[str, pathlib.Path]
@@ -1352,7 +1352,7 @@ def ess1(cvr_path: Union[str, pathlib.Path], office: Optional[str] = None) -> Di
 
 
 def ess2(cvr_path: Union[str, pathlib.Path]) -> Dict[str, List]:
-    """Parser for another format of ES&S CVR files.
+    r"""Parser for another format of ES&S CVR files.
 
     :param cvr_path: Directory containing "\*allot\*.txt" files and "\*ntl\*.txt" files.
     :type cvr_path: Union[str, pathlib.Path]
@@ -1722,7 +1722,7 @@ def _nyc2021(cvr_path, other_data_cols, aggregate=False):
             ]
 
             # make sure columns are in order
-            election_col_order = [(col, int(re.search(".*Choice (\d\d?).*", col).group(1))) for col in election_cols]
+            election_col_order = [(col, int(re.search(r".*Choice (\d\d?).*", col).group(1))) for col in election_cols]
             election_col_order = [i[0] for i in sorted(election_col_order, key=lambda x: x[1])]
 
             sub_cols = list(other_data_cols) + ["Ballot Style", "source_file"] + election_col_order

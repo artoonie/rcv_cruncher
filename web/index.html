@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rcv_cruncher</title>
+<style>
+  :root { --fg:#111; --bg:#fff; --muted:#666; --line:#d4d4d4; --accent:#1a56db; --panel:#f7f7f7; --err:#b00020; --ok:#1a7f37; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e6e6e6; --bg:#141414; --muted:#999; --line:#3a3a3a; --accent:#7aa2ff; --panel:#1e1e1e; --err:#ff6b6b; --ok:#3fb950; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px 20px 40px; font:14px/1.4 system-ui, sans-serif; color:var(--fg); background:var(--bg); max-width:1200px; }
+  h1 { font-size:18px; margin:0 0 2px; }
+  h2 { font-size:13px; margin:28px 0 8px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); display:flex; align-items:center; gap:10px; }
+  .sub { color:var(--muted); margin-bottom:8px; }
+  button, a.btn { font:inherit; padding:4px 10px; border:1px solid var(--line); background:var(--panel); color:var(--fg); border-radius:4px; cursor:pointer; }
+  a.btn { text-decoration:none; display:inline-block; }
+  .small { font-size:11px; padding:1px 7px; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); padding:6px 18px; font-weight:600; }
+  button:disabled { opacity:.5; cursor:default; }
+  .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .contest { border:1px solid var(--line); border-radius:6px; padding:10px 14px 4px; margin-bottom:12px; }
+  .contest .head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .contest .head b { font-size:14px; }
+  .group { padding:6px 0 8px; border-top:1px solid var(--line); }
+  .group:first-of-type { border-top:0; }
+  .group-title { font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; }
+  details.group > summary { cursor:pointer; list-style:none; display:flex; gap:10px; align-items:baseline; padding:3px 6px; margin:0 -6px; border-radius:4px; }
+  details.group > summary:hover { background:var(--panel); }
+  details.group > summary::-webkit-details-marker { display:none; }
+  details.group > summary::before { content:"▶"; color:var(--muted); font-size:9px; width:12px; display:inline-block; }
+  details.group[open] > summary::before { content:"▼"; }
+  details.group > summary .group-title { margin:0; }
+  details.group > summary .summary-values { color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; min-width:0; }
+  details.group > summary button { flex:none; }
+  details.group > .grid { margin-top:8px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:8px 14px; }
+  .pill { font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:10px; padding:0 7px; }
+  .count { font-weight:400; text-transform:none; letter-spacing:0; }
+  .req { color:var(--err); margin-left:2px; }
+  .field { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .field label { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .field label[title] { cursor:help; text-decoration:underline dotted var(--line); text-underline-offset:3px; }
+  .field input[type=text], .field select { font:inherit; padding:4px 6px; border:1px solid var(--line); border-radius:4px; background:var(--bg); color:var(--fg); width:100%; }
+  .field.bool { flex-direction:row; align-items:flex-start; gap:6px; padding-top:19px; min-height:49px; }
+  .field.bool input { margin-top:8px; flex:none; }
+  .field.bool label { font-size:13px; color:var(--fg); white-space:normal; overflow:visible; text-overflow:clip; line-height:1.25; padding-top:7px; }
+  .field .hint { font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-height:14px; }
+  .field.wide { grid-column: 1 / -1; }
+  .filerow { display:flex; gap:6px; align-items:center; min-height:28px; }
+  .filerow .chosen { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #outputs { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px 24px; }
+  .outgroup label { display:flex; gap:6px; align-items:flex-start; padding:1px 0; cursor:pointer; line-height:1.25; }
+  .outgroup label input { margin-top:3px; flex:none; }
+  .outgroup label[title] { cursor:help; }
+  #status { margin-left:4px; }
+  #status.err { color:var(--err); }
+  #status.ok { color:var(--ok); }
+  pre { background:var(--panel); border:1px solid var(--line); padding:8px; max-height:220px; overflow:auto; font-size:12px; margin:8px 0 0; white-space:pre-wrap; }
+  #results { display:grid; grid-template-columns: 360px 1fr; gap:12px; }
+  #files { list-style:none; margin:0; padding:0; border:1px solid var(--line); border-radius:4px; max-height:560px; overflow:auto; font-size:12px; }
+  #files li { padding:3px 8px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+  #files li span:first-child { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #files li span.sz { white-space:nowrap; flex:none; }
+  #files::after { content:""; display:block; height:24px; }
+  #files li:hover, #files li.sel { background:var(--panel); }
+  #files li.sel { font-weight:600; }
+  #files li span.sz { color:var(--muted); }
+  #files li.dir { color:var(--muted); cursor:default; font-weight:600; padding-top:8px; position:sticky; top:0; background:var(--bg); }
+  #preview { border:1px solid var(--line); border-radius:4px; max-height:560px; overflow:auto; }
+  .preview-head { padding:6px 10px; display:flex; gap:12px; align-items:center; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); }
+  .preview-note { padding:6px 10px; color:var(--muted); }
+  #preview table { border-collapse:collapse; font-size:12px; }
+  #preview td, #preview th { border:1px solid var(--line); padding:2px 8px; white-space:nowrap; text-align:left; }
+  #preview th { position:sticky; top:33px; background:var(--panel); }
+  #preview td.num, #preview th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  #preview pre { max-height:none; border:0; margin:0; }
+  footer { margin-top:32px; font-size:11px; color:var(--muted); display:flex; gap:16px; }
+  footer a { color:var(--muted); }
+  footer a.on { color:var(--fg); font-weight:600; text-decoration:none; }
+  .hidden { display:none !important; }
+  @media (max-width: 800px) { #results { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<h1>rcv_cruncher <span id="version"></span></h1>
+<div class="sub">All processing happens on your machine. Data is not uploaded or stored on our servers.</div>
+
+<h2>Contests</h2>
+<div id="contests"></div>
+<div class="bar">
+  <button id="add">Add contest</button>
+  <button id="import">Import contest_set.csv</button>
+  <input id="importFile" type="file" accept=".csv" class="hidden">
+  <button id="export">Export contest_set.csv</button>
+</div>
+
+<h2>Outputs <span class="bar"><button id="outAll">all</button><button id="outNone">none</button></span></h2>
+<div id="outputs"></div>
+
+<h2>Run</h2>
+<div class="bar" id="runBar">
+  <button id="run" class="primary" disabled>Run</button>
+  <span id="status">loading…</span>
+</div>
+
+<div id="resultsSection" class="hidden">
+<h2>Results <span id="fileCount" class="count"></span> <button id="zip">Download results.zip</button></h2>
+<div id="results">
+  <ul id="files"></ul>
+  <div id="preview"></div>
+</div>
+</div>
+
+<div id="logSection" class="hidden">
+<h2>Log <button id="logToggle">Hide log</button></h2>
+<pre id="log"></pre>
+</div>
+
+<footer>
+  <span>runtime: <span id="runtime"></span></span>
+  <span id="backendSwitch" class="hidden">backend: <a href="#" data-b="wasm">wasm</a> · <a href="#" data-b="native">native</a></span>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

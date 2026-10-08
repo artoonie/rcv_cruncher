@@ -81,3 +81,6 @@ docs/_build
 # parity check outputs
 tests/parity/out_*/
 tests/parity/node_modules/
+
+# web ui build output
+web/dist/

@@ -5,6 +5,8 @@
 
 The JSON files in src/rcv_cruncher are the single source of truth for option names, types,
 defaults, and descriptions. batch.py reads type/default; the web UI and these docs read the rest.
+`placeholder`, `required` and `wide` are read by the web UI only; `wide` is a layout hint
+(full-width field) and is not shown in the docs.
 """
 import json
 import pathlib
@@ -37,6 +39,8 @@ def render(settings, src, with_type):
             bits = []
             if with_type:
                 bits.append(spec["type"])
+            if spec.get("required"):
+                bits.append("required")
             bits.append(f"default {fmt_default(spec)}")
             if "applies_when" in spec:
                 (field, values), = spec["applies_when"].items()
