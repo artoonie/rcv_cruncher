@@ -1,0 +1,7 @@
+notes,jurisdiction,state,year,date,office,exhaust_on_overvote_marks,exhaust_on_N_repeated_skipped_marks,exhaust_on_duplicate_candidate_marks,multi_winner_rounds,exclude_writein_marks,combine_writein_marks,treat_combined_writeins_as_exhaustable_duplicates,writeins_eliminated_first,parser_func,rcv_type,n_winners,truncate_to,split_fields,cvr_path
+single winner,Minneapolis,MN,2017,11/7/2017,Mayor,FALSE,2,FALSE,,FALSE,TRUE,FALSE,FALSE,rank_column_csv,SingleWinner,1,,,2017-mayor-cvr.csv
+stv fractional 2 seats,Minneapolis,MN,2017,11/7/2017,Board of Estimate and Taxation,FALSE,2,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,rank_column_csv,STVFractionalBallot,2,4,,2017-boe-cvr.csv
+stv whole ballot 3 seats,Minneapolis,MN,2017,11/7/2017,Park Board At Large,FALSE,2,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,rank_column_csv,STVWholeBallot,3,,,2017-park-at-large-cvr.csv
+single winner with split stats,Minneapolis,MN,2017,11/7/2017,Ward 9 City Council,TRUE,0,TRUE,,FALSE,TRUE,TRUE,TRUE,rank_column_csv,SingleWinner,1,,Precinct,2017-ward-9-cvr.csv
+until2,Minneapolis,MN,2017,11/7/2017,Park Board District 5,FALSE,2,FALSE,,FALSE,TRUE,FALSE,FALSE,rank_column_csv,Until2,1,,,2017-park-district-5-cvr.csv
+sequential,Minneapolis,MN,2017,11/7/2017,Park Board District 4,FALSE,2,FALSE,,FALSE,TRUE,FALSE,FALSE,rank_column_csv,Sequential,2,,,2017-park-district-4-cvr.csv

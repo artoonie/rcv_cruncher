@@ -57,7 +57,7 @@ class CastVoteRecord_stats:
                 cvr_stats = cvr_split_stats
 
         if not keep_decimal_type:
-            cvr_stats = cvr_stats.applymap(util.decimal2float)
+            cvr_stats = util.df_map(cvr_stats, util.decimal2float)
 
         return [cvr_stats]
 
@@ -249,7 +249,7 @@ class CastVoteRecord_stats:
                     cvr_field_name = field_name_lower_dict[field.lower()]
                     cvr_field = cvr[cvr_field_name]
                     field_filter_dict = {
-                        unique_val: [unique_val == i for i in cvr_field] for unique_val in set(cvr_field)
+                        unique_val: [unique_val == i for i in cvr_field] for unique_val in sorted(set(cvr_field), key=str)
                     }
                     self._split_filter_dict.update({cvr_field_name: field_filter_dict})
 
@@ -323,7 +323,7 @@ class CastVoteRecord_stats:
                 cvr_field = cvr[cvr_field_name]
                 field_clean = self._clean_string(cvr_field_name)
 
-                for unique_val in set(cvr_field):
+                for unique_val in sorted(set(cvr_field), key=str):
 
                     field_filter = [unique_val == i for i in cvr_field]
 

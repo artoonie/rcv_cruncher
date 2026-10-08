@@ -208,7 +208,7 @@ class CastVoteRecord_tables:
                     df.loc[cand, dist_count_labels[idx]] = 0
                     df.loc[cand, dist_percent_labels[idx]] = 0
 
-        return df.applymap(util.decimal2float)
+        return util.df_map(df, util.decimal2float)
 
     def get_crossover_tables(self) -> Tuple[pd.DataFrame]:
         """Table describing co-ranking patterns between candidates. For each subset of ballots organized by first choice candidate, one in each row of the table, the frequency with which all candidates appear in the top 3 ranks of ballots in that subset is calculated. For this table, ballots are used without any contest rules applied.

@@ -93,6 +93,16 @@ def flatten_list(lst):
     return [i for sublist in lst for i in sublist]
 
 
+def df_map(df, func):
+    """Apply ``func`` elementwise to a DataFrame.
+
+    ``DataFrame.applymap`` was renamed to ``DataFrame.map`` in pandas 2.1 and removed in pandas 3.
+    """
+    if hasattr(df, "map"):
+        return df.map(func)
+    return df.applymap(func)
+
+
 def decimal2float(stat, round_places=3):
     """Convert any decimal objects used internally into float for reporting.
 
@@ -127,4 +137,4 @@ def longname(path):
 
 def filter_bool_dict(ballots, field_name):
     val_list = ballots[field_name]
-    return {split_val: [split_val == i for i in val_list] for split_val in set(val_list)}
+    return {split_val: [split_val == i for i in val_list] for split_val in sorted(set(val_list), key=str)}

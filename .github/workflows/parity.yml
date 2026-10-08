@@ -1,0 +1,54 @@
+name: parity
+
+# Runs the same batch contest set under native CPython and under Pyodide (CPython compiled to
+# WebAssembly) and fails if any output file differs. This is what lets the web UI claim it
+# produces exactly what the CLI produces.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  native-vs-pyodide:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run batch natively
+        run: python tests/parity/run_batch.py . tests/parity/out_native
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tests/parity/package-lock.json
+
+      - name: Install Pyodide
+        working-directory: tests/parity
+        run: npm ci
+
+      - name: Run batch under Pyodide
+        run: node tests/parity/run_pyodide.mjs tests/parity/out_pyodide
+
+      - name: Compare outputs
+        run: python tests/parity/compare.py tests/parity/out_native tests/parity/out_pyodide
+
+      - name: Upload outputs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-outputs
+          path: |
+            tests/parity/out_native
+            tests/parity/out_pyodide

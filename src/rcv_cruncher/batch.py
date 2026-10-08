@@ -9,7 +9,7 @@ import os
 import pathlib
 import copy
 import shutil
-import pkg_resources
+import importlib.metadata
 import collections
 import datetime
 import abc
@@ -794,7 +794,10 @@ def _write_input_dir(results_dir, output_config, start_time, end_time):
     result_log_dir = results_dir / "inputs"
     util.verifyDir(result_log_dir)
 
-    pkg_version = pkg_resources.require("rcv_cruncher")[0].version
+    try:
+        pkg_version = importlib.metadata.version("rcv_cruncher")
+    except importlib.metadata.PackageNotFoundError:
+        pkg_version = "unknown"
     pkg_url = "https://github.com/fairvotereform/rcv_cruncher"
     with open(result_log_dir / "pkg_info.txt", "w") as pkg_info:
         pkg_info.write(f"version: {pkg_version}\n")

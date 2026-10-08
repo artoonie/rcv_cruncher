@@ -111,7 +111,7 @@ class RCV_tables:
 
             for cand in candidate_set:
 
-                not_cand = list(set(candidate_set) - {cand})
+                not_cand = sorted(set(candidate_set) - {cand})
                 all_winner = all(condorcet_percent_df.loc[cand, not_cand] > 50)
 
                 if all_winner:
@@ -184,7 +184,7 @@ class RCV_tables:
 
             ############################################################
             # calculate second choices, group second choices by candidate
-            possible_second_choices = list(set(candidate_set) - {cand})
+            possible_second_choices = sorted(set(candidate_set) - {cand})
             second_choices = {backup_cand: [] for backup_cand in possible_second_choices + ["exhaust"]}
 
             # group ballots by second choices
@@ -269,7 +269,7 @@ class RCV_tables:
         # tally candidate counts by rank
         rank_counts = []
         for rank in range(0, ballot_length):
-            rank_cand_set = set([b["ranks"][rank] for b in ballot_set]) - {"NA"}
+            rank_cand_set = sorted(set([b["ranks"][rank] for b in ballot_set]) - {"NA"})
             current_rank_count = {cand: 0 for cand in rank_cand_set}
             for cand in rank_cand_set:
                 current_rank_count[cand] = sum(b["weight"] for b in ballot_set if cand == b["ranks"][rank])
@@ -456,7 +456,7 @@ class RCV_tables:
 
         num_rounds = self.n_rounds(tabulation_num=tabulation_num)
 
-        first_round_exhaust = self.get_stats()[tabulation_num - 1]["total_pretally_exhausted"].item()
+        first_round_exhaust = self.get_stats(keep_decimal_type=True)[tabulation_num - 1]["total_pretally_exhausted"].item()
 
         # get rcv results
         first_round_dict = self.get_round_tally_dict(1, tabulation_num=tabulation_num)
@@ -489,7 +489,12 @@ class RCV_tables:
 
         # setup data frame
         row_names = ordered_candidates_names + ["exhaust"]
-        rcv_df = pd.DataFrame(NAN, index=row_names + ["colsum"], columns=["candidate"])
+        # create every column up front with object dtype so pandas never coerces the Decimal
+        # values to float while the table is being filled in
+        round_cols = []
+        for rnd in range(1, num_rounds + 1):
+            round_cols += ["r" + str(rnd) + "_active_percent", "r" + str(rnd) + "_count", "r" + str(rnd) + "_transfer"]
+        rcv_df = pd.DataFrame(NAN, index=row_names + ["colsum"], columns=["candidate"] + round_cols, dtype=object)
         rcv_df.loc[row_names + ["colsum"], "candidate"] = row_names + ["colsum"]
 
         # loop through rounds
@@ -511,21 +516,18 @@ class RCV_tables:
                 rcv_df.loc[cand, rnd_count_col] = rnd_info[cand]
                 rcv_df.loc[cand, rnd_transfer_col] = rnd_transfer[cand]
 
-            # maintain cumulative exhaust total
+            # maintain cumulative exhaust total (tracked as a python value so pandas never coerces it to float)
             if rnd == 1:
-                rcv_df.loc["exhaust", rnd_count_col] = first_round_exhaust
+                exhaust_count = first_round_exhaust
             else:
-                last_rnd_count_col = "r" + str(rnd - 1) + "_count"
-                last_rnd_transfer_col = "r" + str(rnd - 1) + "_transfer"
-                current_rnd_count_val = sum(
-                    rcv_df.loc["exhaust", [last_rnd_count_col, last_rnd_transfer_col]].astype(float)
-                )
-                rcv_df.loc["exhaust", rnd_count_col] = current_rnd_count_val
+                exhaust_count = exhaust_count + transfers[rnd - 2]["exhaust"]
+            rcv_df.loc["exhaust", rnd_count_col] = exhaust_count
 
             # sum round columns
-            rcv_df.loc["colsum", rnd_count_col] = sum(rcv_df.loc[list(row_names), rnd_count_col].astype(float))
-            rcv_df.loc["colsum", rnd_transfer_col] = sum(rcv_df.loc[list(row_names), rnd_transfer_col].astype(float))
-            rcv_df.loc["colsum", rnd_percent_col] = sum(rcv_df.loc[list(row_names), rnd_percent_col].astype(float))
+            # sum in Decimal so the result does not depend on float summation order or Python version
+            rcv_df.loc["colsum", rnd_count_col] = sum(rcv_df.loc[list(row_names), rnd_count_col])
+            rcv_df.loc["colsum", rnd_transfer_col] = sum(rcv_df.loc[list(row_names), rnd_transfer_col])
+            rcv_df.loc["colsum", rnd_percent_col] = sum(rcv_df.loc[list(row_names), rnd_percent_col])
 
         # convert from decimal to float
         rcv_df.loc[row_names + ["colsum"], rcv_df.columns != "candidate"] = (
@@ -676,7 +678,7 @@ class RCV_tables:
         """
 
         # set up vars
-        contest_candidates = self._contest_candidates.unique_candidates
+        contest_candidates = sorted(self._contest_candidates.unique_candidates)
         rank_limit = self._summary_cvr_stat_table["rank_limit"].item()
         candidate_outcomes = {dikt["name"]: dikt for dikt in self.get_candidate_outcomes(tabulation_num=1)}
         first_round_dict = self.get_round_tally_dict(round_num=1, tabulation_num=1)

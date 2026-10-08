@@ -176,7 +176,7 @@ class RCV_stats:
             return True
 
         winner = self._tabulation_winner(tabulation_num=tabulation_num)[0]
-        losers = [cand for cand in cands.unique_candidates if cand != winner]
+        losers = [cand for cand in sorted(cands.unique_candidates) if cand != winner]
 
         net = collections.Counter()
         for b in contest_cvr_ld:

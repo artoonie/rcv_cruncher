@@ -1,0 +1,9 @@
+{
+  "name": "rcv-cruncher-parity",
+  "private": true,
+  "type": "module",
+  "description": "Runs the rcv_cruncher parity contest set under Pyodide so CI can diff it against native CPython output.",
+  "dependencies": {
+    "pyodide": "314.0.7"
+  }
+}

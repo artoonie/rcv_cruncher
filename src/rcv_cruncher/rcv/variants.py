@@ -111,7 +111,7 @@ class SingleWinner(RCV):
         rules:
         - transfer votes from round loser
         """
-        candidates = self._contest_candidates.unique_candidates.union({"exhaust"})
+        candidates = sorted(self._contest_candidates.unique_candidates.union({"exhaust"}))
 
         # calculate transfer
         by_candidate_transfer_dict = {
@@ -330,6 +330,7 @@ class STVWholeBallot(STV):
         multi_winner_rounds: bool = False,
         writeins_eliminated_first: bool = None,
         bottoms_up_threshold: Optional[float] = None,
+        truncate_to: Optional[int] = 4,
     ) -> None:
         super().__init__(
             jurisdiction=jurisdiction,
@@ -352,7 +353,8 @@ class STVWholeBallot(STV):
             n_winners=n_winners,
             multi_winner_rounds=multi_winner_rounds,
             bottoms_up_threshold=bottoms_up_threshold,
-            writeins_eliminated_first=writeins_eliminated_first
+            writeins_eliminated_first=writeins_eliminated_first,
+            truncate_to=truncate_to,
         )
 
         weights = set(b["weight"] for b in self._contest_cvr_ld)
@@ -457,7 +459,7 @@ class STVWholeBallot(STV):
         - transfer votes from round loser or winner
         """
 
-        candidates = self._contest_candidates.unique_candidates.union({"exhaust"})
+        candidates = sorted(self._contest_candidates.unique_candidates.union({"exhaust"}))
 
         # calculate transfer
         by_candidate_transfer_dict = {
@@ -716,7 +718,7 @@ class STVFractionalBallot(STV):
         else:
             transfer_candidates = [self._round_loser]
 
-        candidates = self._contest_candidates.unique_candidates.union({"exhaust"})
+        candidates = sorted(self._contest_candidates.unique_candidates.union({"exhaust"}))
 
         # calculate transfer
         by_candidate_transfer_dict = {
@@ -782,6 +784,7 @@ class BottomsUpThresh(RCV):
         multi_winner_rounds: bool = False,
         writeins_eliminated_first: bool = None,
         bottoms_up_threshold: Optional[float] = None,
+        truncate_to: Optional[int] = 4,
 
     ) -> None:
         super().__init__(
@@ -806,6 +809,7 @@ class BottomsUpThresh(RCV):
             multi_winner_rounds=multi_winner_rounds,
             bottoms_up_threshold=bottoms_up_threshold,
             writeins_eliminated_first=writeins_eliminated_first,
+            truncate_to=truncate_to,
         )
         if self._bottoms_up_threshold is None:
             #raise RuntimeError('BottomsUpThresh RCV variant requires values for "bottoms_up_thresh" argument')
@@ -839,7 +843,7 @@ class BottomsUpThresh(RCV):
         - transfer votes from round loser
         """
 
-        candidates = self._contest_candidates.unique_candidates.union({"exhaust"})
+        candidates = sorted(self._contest_candidates.unique_candidates.union({"exhaust"}))
 
         # calculate transfer
         by_candidate_transfer_dict = {
@@ -847,7 +851,7 @@ class BottomsUpThresh(RCV):
             for from_cand in candidates
             if from_cand != "exhaust"
         }
-        transfer_dict = {cand: 0 for cand in self._contest_candidates.unique_candidates.union({"exhaust"})}
+        transfer_dict = {cand: 0 for cand in sorted(self._contest_candidates.unique_candidates.union({"exhaust"}))}
 
         for b in self._contest_cvr_ld:
             if len(b["ballot_marks"].marks) > 0 and b["ballot_marks"].marks[0] == self._round_loser:

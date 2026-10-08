@@ -8,7 +8,6 @@ from typing import Dict, Tuple, Type, Union, List, Optional, Callable
 import abc
 import collections
 import decimal
-import random
 import json
 import pathlib
 
@@ -422,7 +421,7 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
                 contest_stats = new_contest_stats
 
         if not keep_decimal_type:
-            contest_stats = [t.applymap(util.decimal2float) for t in contest_stats]
+            contest_stats = [util.df_map(t, util.decimal2float) for t in contest_stats]
 
         return contest_stats
 
@@ -450,7 +449,7 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
         self._tab_num += 1
         new_outcomes = {
             cand: {"name": cand, "round_eliminated": None, "round_elected": None}
-            for cand in self._contest_candidates.unique_candidates
+            for cand in sorted(self._contest_candidates.unique_candidates)
         }
         self._tabulations.append(
             {
@@ -505,7 +504,7 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
             # on the first elimination round, mark any candidates with zero votes for elimination
             if first_elimination_round is None and not self._round_winners:
                 round_dict = self.get_round_tally_dict(self._round_num, tabulation_num=self._tab_num)
-                novote_losers = [cand for cand in self._contest_candidates.unique_candidates if round_dict[cand] == 0]
+                novote_losers = [cand for cand in sorted(self._contest_candidates.unique_candidates) if round_dict[cand] == 0]
 
                 for loser in novote_losers:
                     self._tabulations[self._tab_num - 1]["candidate_outcomes"][loser][
@@ -540,7 +539,7 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
                 self._calc_round_transfer()
             else:
                 self._tabulations[self._tab_num - 1]["summary_transfers"].append(
-                    {cand: util.NAN for cand in self._contest_candidates.unique_candidates.union({"exhaust"})}
+                    {cand: util.NAN for cand in sorted(self._contest_candidates.unique_candidates.union({"exhaust"}))}
                 )
                 self._tabulations[self._tab_num - 1]["by_candidate_transfers"].append({})
 
@@ -587,7 +586,7 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
         # tally current and distributed weights
         ballot_alloc = []
         ballot_alloc_weight = []
-        vote_alloc = collections.Counter({cand: 0 for cand in self._contest_candidates.unique_candidates})
+        vote_alloc = collections.Counter({cand: 0 for cand in sorted(self._contest_candidates.unique_candidates)})
 
         for b in self._contest_cvr_ld:
 
@@ -644,7 +643,9 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
     def _set_round_loser(self) -> None:
         """
         Find candidate from round with least votes.
-        If more than one, choose randomly
+        If more than one candidate is tied for the fewest votes, the last one in
+        alphabetical order is eliminated. This is deterministic so that repeated
+        runs (and runs on different platforms) produce identical results.
         """
 
 
@@ -672,7 +673,7 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
             round_losers = sorted(
                 [cand for cand, cand_tally in zip(active_candidates, round_tallies) if cand_tally == loser_count]
             )
-            self._round_loser = random.sample(round_losers, 1)[0]
+            self._round_loser = round_losers[-1]
 
     def get_round_tally_tuple(
         self,
@@ -936,7 +937,7 @@ class RCV(abc.ABC, CastVoteRecord, RCV_stats, RCV_tables):
         :rtype: List[str]
         """
         final_weight_distrib = self.get_final_weight_distrib(tabulation_num=tabulation_num)
-        final_weight_cands = list(set(t[0] for t in util.flatten_list(final_weight_distrib)).difference({"exhaust"}))
+        final_weight_cands = sorted(set(t[0] for t in util.flatten_list(final_weight_distrib)).difference({"exhaust"}))
         return final_weight_cands
 
     def n_rounds(self, tabulation_num: int = 1) -> int:
