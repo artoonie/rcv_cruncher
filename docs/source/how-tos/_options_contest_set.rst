@@ -22,7 +22,6 @@ Tabulation
 ----------
 
 * ``rcv_type`` (func; required; default none): Tabulation variant: SingleWinner, Sequential, Until2, STVWholeBallot, STVFractionalBallot, or BottomsUpThresh.
-* ``writeins_eliminated_first`` (bool; default FALSE): Eliminate the write-in candidate in the first elimination round regardless of its vote total.
 * ``n_winners`` (int; default 1; only when ``rcv_type`` is Sequential, STVWholeBallot, STVFractionalBallot, BottomsUpThresh): Number of seats. Used by multi-winner variants only.
 * ``multi_winner_rounds`` (bool; default TRUE; only when ``rcv_type`` is STVWholeBallot, STVFractionalBallot): In STV, elect every candidate over the threshold in the same round. If false, elect only the one with the most votes and continue.
 * ``bottoms_up_threshold`` (float; default none; only when ``rcv_type`` is BottomsUpThresh): Fraction of active votes, between 0 and 1, a candidate needs to be elected in a round. Defaults to 1/(n_winners+1).
@@ -34,9 +33,14 @@ Ballot rules
 * ``exhaust_on_overvote_marks`` (bool; default FALSE): Exhaust a ballot at its first overvote (more than one candidate at one rank). If false, the overvoted rank is skipped.
 * ``exhaust_on_N_repeated_skipped_marks`` (int; default 0): Exhaust a ballot after this many consecutive skipped rankings. 0 means skipped rankings never exhaust.
 * ``exhaust_on_duplicate_candidate_marks`` (bool; default FALSE): Exhaust a ballot at the first rank that repeats a candidate already ranked above. If false, the repeat is skipped.
+
+Write-ins
+---------
+
 * ``exclude_writein_marks`` (bool; default FALSE): Ignore write-in marks entirely.
 * ``combine_writein_marks`` (bool; default FALSE): Combine all write-in candidates into one. A candidate named UWI, or whose name contains 'write', counts as a write-in.
 * ``treat_combined_writeins_as_exhaustable_duplicates`` (bool; default FALSE; only when ``combine_writein_marks`` is TRUE): When write-ins are combined, two write-in marks on one ballot count as a duplicate ranking for the exhaustion rule.
+* ``writeins_eliminated_first`` (bool; default FALSE): Eliminate the write-in candidate in the first elimination round regardless of its vote total.
 
 Split statistics
 ----------------

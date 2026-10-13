@@ -4,7 +4,17 @@ const SKIP_COLUMNS = new Set(["ignore_contest"]);
 // Columns that the CLI reads as "no value" when the cell is empty.
 const EMPTY_DEFAULTS = new Set(["", "None", "np.nan"]);
 // Groups shown expanded by default; the rest collapse to a summary of non-default values.
-const OPEN_GROUPS = new Set(["Election", "Input", "Tabulation"]);
+const OPEN_GROUPS = new Set(["Election", "Input", "Tabulation", "Ballot rules"]);
+// Link shown top right. Leave empty to hide the button.
+const TABULATION_RULES_URL = "https://docs.google.com/spreadsheets/d/1JKTHia4iSNT16dhEOmsEtS0muisUgT3_1WD3PvIAoBU";
+// Presets for the three exhaust rules, offered in the Ballot rules group. The first is the page default.
+const EXHAUST_PRESETS = [
+  { name: "MN", values: { exhaust_on_overvote_marks: false, exhaust_on_duplicate_candidate_marks: false, exhaust_on_N_repeated_skipped_marks: "0" } },
+  { name: "CA/NM/NYC", values: { exhaust_on_overvote_marks: true, exhaust_on_duplicate_candidate_marks: false, exhaust_on_N_repeated_skipped_marks: "0" } },
+  { name: "AK/DC/ME", values: { exhaust_on_overvote_marks: true, exhaust_on_duplicate_candidate_marks: false, exhaust_on_N_repeated_skipped_marks: "2" } },
+  { name: "Strict", values: { exhaust_on_overvote_marks: true, exhaust_on_duplicate_candidate_marks: true, exhaust_on_N_repeated_skipped_marks: "1" } },
+];
+const PRESETS_FOR_GROUP = { "Ballot rules": EXHAUST_PRESETS };
 const ACRONYMS = { rcv: "RCV", cvr: "CVR", json: "JSON", csv: "CSV", stv: "STV", n: "N", fvdbfmt: "FvDB Format", id: "ID" };
 
 const $ = (id) => document.getElementById(id);
@@ -35,7 +45,10 @@ const groupsOf = (entries) => {
   for (const [name, spec] of entries) (g.get(spec.group) ?? g.set(spec.group, []).get(spec.group)).push([name, spec]);
   return g;
 };
-const defaultOf = (spec) => (spec.type === "bool" ? spec.default === true : EMPTY_DEFAULTS.has(String(spec.default)) ? "" : String(spec.default));
+const defaultOf = (spec) => {
+  const d = spec.web_default ?? spec.default;
+  return spec.type === "bool" ? d === true : EMPTY_DEFAULTS.has(String(d)) ? "" : String(d);
+};
 const isDefault = (spec, v) => v === defaultOf(spec) || (v === "" && EMPTY_DEFAULTS.has(String(spec.default)));
 // applies_when: {field: [allowed values]}; a field is applicable when every condition holds
 const applies = (spec, values) => Object.entries(spec.applies_when ?? {}).every(([f, allowed]) => allowed.includes(values[f]));
@@ -162,7 +175,12 @@ function renderContest(idx) {
     const visible = entries.filter(([, spec]) => applies(spec, c.values));
     const grid = el("div", { class: "grid" }, ...visible.flatMap(([col, spec]) => fieldWidget(col, spec, c, idx, rerender, refresh)));
     if (OPEN_GROUPS.has(group)) {
-      card.append(el("div", { class: "group" }, el("div", { class: "group-title" }, group), grid));
+      const presets = PRESETS_FOR_GROUP[group];
+      const row = presets ? el("div", { class: "presets" }, "Preset:", ...presets.map((p) => {
+        const active = Object.entries(p.values).every(([k, v]) => c.values[k] === v);
+        return el("button", { type: "button", class: `small${active ? " on" : ""}`, onclick: () => { Object.assign(c.values, p.values); rerender(); } }, p.name);
+      })) : "";
+      card.append(el("div", { class: "group" }, el("div", { class: "group-title" }, group), row, grid));
       continue;
     }
     const details = el("details", { class: "group", "data-group": group, open: c.open?.has(group) },
@@ -243,7 +261,7 @@ function renderOutputs() {
     const box = el("div", { class: "outgroup" }, el("div", { class: "group-title" }, group));
     for (const [key, spec] of items) {
       const input = el("input", { type: "checkbox", id: `out-${key}` });
-      input.checked = spec.default === true;
+      input.checked = (spec.web_default ?? spec.default) === true;
       box.append(el("label", { title: spec.description }, input, titleCase(key)));
     }
     root.append(box);
@@ -455,6 +473,7 @@ async function setupBackendSwitch() {
 (async function main() {
   meta = await (await fetch("dist/meta.json")).json();
   $("version").textContent = meta.version;
+  if (TABULATION_RULES_URL) { $("rulesLink").href = TABULATION_RULES_URL; $("rulesLink").classList.remove("hidden"); }
   renderOutputs();
   contests = [newContest()];
   renderContests();

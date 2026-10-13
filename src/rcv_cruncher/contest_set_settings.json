@@ -72,12 +72,6 @@
         "required": true,
         "description": "Tabulation variant: SingleWinner, Sequential, Until2, STVWholeBallot, STVFractionalBallot, or BottomsUpThresh."
     },
-    "writeins_eliminated_first": {
-        "type": "bool",
-        "default": false,
-        "group": "Tabulation",
-        "description": "Eliminate the write-in candidate in the first elimination round regardless of its vote total."
-    },
     "n_winners": {
         "type": "int",
         "default": "1",
@@ -147,25 +141,33 @@
     "exclude_writein_marks": {
         "type": "bool",
         "default": false,
-        "group": "Ballot rules",
+        "group": "Write-ins",
         "description": "Ignore write-in marks entirely."
     },
     "combine_writein_marks": {
         "type": "bool",
         "default": false,
-        "group": "Ballot rules",
+        "web_default": true,
+        "group": "Write-ins",
         "description": "Combine all write-in candidates into one. A candidate named UWI, or whose name contains 'write', counts as a write-in."
     },
     "treat_combined_writeins_as_exhaustable_duplicates": {
         "type": "bool",
         "default": false,
-        "group": "Ballot rules",
+        "group": "Write-ins",
         "applies_when": {
             "combine_writein_marks": [
                 true
             ]
         },
         "description": "When write-ins are combined, two write-in marks on one ballot count as a duplicate ranking for the exhaustion rule."
+    },
+    "writeins_eliminated_first": {
+        "type": "bool",
+        "default": false,
+        "web_default": true,
+        "group": "Write-ins",
+        "description": "Eliminate the write-in candidate in the first elimination round regardless of its vote total."
     },
     "split_fields": {
         "type": "list",

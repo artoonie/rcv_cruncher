@@ -25,7 +25,12 @@ Repository settings → Pages → Source must be set to "GitHub Actions" once.
 The form is generated from `contest_set_settings.json` and `run_config_settings.json`, so
 new options show up without touching the page. Besides `type`/`default` (which the CLI reads),
 the page uses `group`, `description` (tooltip), `required`, `applies_when` (conditional
-display), `placeholder`, `wide` (full-width field) and `deprecated` (hidden). Deliberately not
+display), `placeholder`, `wide` (full-width field), `web_default` (the form's starting value
+where it differs from the CLI default; the form writes every value explicitly, so the CLI
+sees the same thing) and `deprecated` (hidden).
+
+Page-only settings live at the top of `app.js`: which groups are open, the exhaust-rule presets
+offered in Ballot rules, and the "Tabulation Rules from Previous Elections" link URL. Deliberately not
 exposed:
 
 | CLI option | Why |
