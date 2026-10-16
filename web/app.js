@@ -209,6 +209,30 @@ function filePathsFor(c, idx) {
   });
 }
 
+// Read every file's bytes with bounded concurrency and retries: launching tens of thousands of
+// concurrent reads at once makes Chromium fail random ones with NotReadableError.
+async function readAll(files, concurrency = 64) {
+  const out = new Array(files.length);
+  let next = 0, done = 0;
+  const readOne = async (f, attempt = 0) => {
+    try { return await f.file.arrayBuffer(); }
+    catch (err) {
+      if (attempt >= 4) throw new Error(`Cannot read ${f.file.webkitRelativePath || f.file.name}: ${err.message ?? err} — the file may have changed since selection, be online-only in a cloud drive, or lack read permission; re-select the folder and retry`);
+      await new Promise((r) => setTimeout(r, 100 * 2 ** attempt));
+      return readOne(f, attempt + 1);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, files.length) }, async () => {
+    while (next < files.length) {
+      const i = next++;
+      out[i] = { path: files[i].path, data: await readOne(files[i]) };
+      if (runState) runState.progress = `reading files ${++done}/${files.length}`;
+    }
+  }));
+  if (runState) runState.progress = "";
+  return out;
+}
+
 // ---------------------------------------------------------------- csv
 const csvCell = (v) => {
   const s = v === true ? "TRUE" : v === false ? "FALSE" : String(v ?? "");
@@ -348,7 +372,7 @@ async function run() {
   try {
     if (backend === "native") await runNative(job);
     else {
-      const payload = { ...job, files: await Promise.all(files.map(async (f) => ({ path: f.path, data: await f.file.arrayBuffer() }))) };
+      const payload = { ...job, files: await readAll(files) };
       worker.postMessage({ type: "run", job: payload }, payload.files.map((f) => f.data));
     }
   } catch (err) {

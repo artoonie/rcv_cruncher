@@ -396,11 +396,16 @@ def dominion5_4(cvr_path: Union[str, pathlib.Path], office: str) -> Dict[str, Li
     path = pathlib.Path(cvr_path)
 
     # load manifests, with ids as keys
+    current_contest_id = None
+    contest_names = []
     with open(path / "ContestManifest.json", encoding="utf8") as f:
         for i in json.load(f)["List"]:
+            contest_names.append(i["Description"].strip())
             if i["Description"].strip() == office:
                 current_contest_id = i["Id"]
                 current_contest_rank_limit = i["NumOfRanks"]
+    if current_contest_id is None:
+        raise RuntimeError(f"office {office!r} not found in ContestManifest.json. Contests: {'; '.join(contest_names)}")
 
     candidate_manifest = {}
     with open(path / "CandidateManifest.json", encoding="utf8") as f:
@@ -568,11 +573,16 @@ def dominion5_10(cvr_path: Union[str, pathlib.Path], office: str) -> Dict[str, L
     path = pathlib.Path(cvr_path)
     #print(path)
     # load manifests, with ids as keys
+    current_contest_id = None
+    contest_names = []
     with open(path / "ContestManifest.json", encoding="utf8") as f:
         for i in json.load(f)["List"]:
+            contest_names.append(i["Description"].strip())
             if i["Description"].strip() == office:
                 current_contest_id = i["Id"]
                 current_contest_rank_limit = i["NumOfRanks"]
+    if current_contest_id is None:
+        raise RuntimeError(f"office {office!r} not found in ContestManifest.json. Contests: {'; '.join(contest_names)}")
 
     candidate_manifest = {}
     with open(path / "CandidateManifest.json", encoding="utf8") as f:
@@ -825,11 +835,16 @@ def dominion5_10_Alaska2024(cvr_path: Union[str, pathlib.Path], office: str) -> 
     path = pathlib.Path(cvr_path)
     #print(path)
     # load manifests, with ids as keys
+    current_contest_id = None
+    contest_names = []
     with open(path / "ContestManifest.json", encoding="utf8") as f:
         for i in json.load(f)["List"]:
+            contest_names.append(i["Description"].strip())
             if i["Description"].strip() == office:
                 current_contest_id = i["Id"]
                 current_contest_rank_limit = i["NumOfRanks"]
+    if current_contest_id is None:
+        raise RuntimeError(f"office {office!r} not found in ContestManifest.json. Contests: {'; '.join(contest_names)}")
 
     candidate_manifest = {}
     with open(path / "CandidateManifest.json", encoding="utf8") as f:

@@ -47,6 +47,11 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path.startswith("/api/"):
             super().log_message(fmt, *args)
 
+    def end_headers(self):
+        # dev server: make browsers revalidate so edits show up on plain reload
+        self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
     # ---- helpers
     def _json(self, status, obj):
         body = json.dumps(obj).encode()
