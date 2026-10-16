@@ -1,4 +1,6 @@
-// Web Worker hosting Pyodide. Messages in: {type:"init"} | {type:"run", job} | {type:"readFile", path}
+// Web Worker hosting Pyodide. Messages in: {type:"init"} | {type:"begin"} (reset the job dir)
+// | {type:"upload", path, data} (one CVR file, transferred; written to the job dir and freed)
+// | {type:"run", job} | {type:"readFile", path}
 // Messages out: {type:"boot", text} (runtime loading stage) | {type:"log", text} (python stdout/stderr) | {type:"ready", info} | {type:"result", ...} | {type:"file", path, data} | {type:"error", text}
 let pyodide = null;
 let meta = null;
@@ -64,8 +66,6 @@ function writeFile(rel, data) {
 }
 
 async function run(job) {
-  resetJobDir();
-  for (const f of job.files) writeFile(f.path, f.data);
   const result = pyodide.runPython(`
 import json, runner
 json.dumps(runner.run_job(${JSON.stringify(JOB_DIR)}, ${JSON.stringify(job.contest_set_csv)}, ${JSON.stringify(job.run_config_json)}))
@@ -77,6 +77,8 @@ self.onmessage = async (e) => {
   const msg = e.data;
   try {
     if (msg.type === "init") await init();
+    else if (msg.type === "begin") resetJobDir();
+    else if (msg.type === "upload") writeFile(msg.path, msg.data);
     else if (msg.type === "run") await run(msg.job);
     else if (msg.type === "readFile") {
       const data = pyodide.FS.readFile(`${JOB_DIR}/${msg.path}`);

@@ -209,10 +209,12 @@ function filePathsFor(c, idx) {
   });
 }
 
-// Read every file's bytes with bounded concurrency and retries: launching tens of thousands of
-// concurrent reads at once makes Chromium fail random ones with NotReadableError.
-async function readAll(files, concurrency = 64) {
-  const out = new Array(files.length);
+// Stream each file's bytes to the worker as it is read, with bounded concurrency and retries.
+// Bounded concurrency: tens of thousands of simultaneous reads make Chromium fail random ones
+// with NotReadableError. Streaming: buffering a whole folder and transferring it in one message
+// doubles peak tab memory (a 4.7 GB CVR export crashed the tab on smaller machines); transferring
+// per file lets each buffer be freed as soon as the worker has copied it into its filesystem.
+async function sendFiles(files, concurrency = 16) {
   let next = 0, done = 0;
   const readOne = async (f, attempt = 0) => {
     try { return await f.file.arrayBuffer(); }
@@ -225,12 +227,12 @@ async function readAll(files, concurrency = 64) {
   await Promise.all(Array.from({ length: Math.min(concurrency, files.length) }, async () => {
     while (next < files.length) {
       const i = next++;
-      out[i] = { path: files[i].path, data: await readOne(files[i]) };
-      if (runState) runState.progress = `reading files ${++done}/${files.length}`;
+      const data = await readOne(files[i]);
+      worker.postMessage({ type: "upload", path: files[i].path, data }, [data]);
+      if (runState) runState.progress = `uploading files ${++done}/${files.length}`;
     }
   }));
   if (runState) runState.progress = "";
-  return out;
 }
 
 // ---------------------------------------------------------------- csv
@@ -360,6 +362,10 @@ async function run() {
     return names.length ? `${contestTitle(c, i)}: missing ${names.join(", ")}` : null;
   }).filter(Boolean);
   if (missing.length) return setStatus(missing.join("; "), true);
+  const files = contests.flatMap((c, idx) => filePathsFor(c, idx));
+  const totalBytes = files.reduce((n, f) => n + f.file.size, 0);
+  if (backend === "wasm" && totalBytes > 1.5e9
+      && !confirm(`The selected files total ${(totalBytes / 1e9).toFixed(1)} GB. The in-browser backend holds all of them in tab memory, which can crash the tab unless the machine has several times that much free RAM. Run anyway?`)) return;
   $("run").disabled = true;
   $("log").textContent = "";
   appendLog(`── ${backend} · ${new Date().toLocaleTimeString()} ──`);
@@ -367,13 +373,13 @@ async function run() {
   $("resultsSection").classList.add("hidden");
   runState = { start: performance.now(), timer: setInterval(tickStatus, 1000), progress: "" };
   tickStatus();
-  const files = contests.flatMap((c, idx) => filePathsFor(c, idx));
   const job = { contest_set_csv: contestSetCsv(), run_config_json: runConfigJson(), files };
   try {
     if (backend === "native") await runNative(job);
     else {
-      const payload = { ...job, files: await readAll(files) };
-      worker.postMessage({ type: "run", job: payload }, payload.files.map((f) => f.data));
+      worker.postMessage({ type: "begin" });
+      await sendFiles(files);
+      worker.postMessage({ type: "run", job: { contest_set_csv: job.contest_set_csv, run_config_json: job.run_config_json } });
     }
   } catch (err) {
     endRun();

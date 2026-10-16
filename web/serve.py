@@ -128,10 +128,11 @@ class Handler(SimpleHTTPRequestHandler):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--host", default="127.0.0.1", help="use 0.0.0.0 to serve other machines, e.g. a test VM")
     args = ap.parse_args()
     handler = functools.partial(Handler, directory=str(HERE))
-    print(f"serving {HERE} at http://localhost:{args.port}  (jobs in {JOBS_ROOT})")
-    ThreadingHTTPServer(("127.0.0.1", args.port), handler).serve_forever()
+    print(f"serving {HERE} at http://{args.host}:{args.port}  (jobs in {JOBS_ROOT})")
+    ThreadingHTTPServer((args.host, args.port), handler).serve_forever()
 
 
 if __name__ == "__main__":
