@@ -49,10 +49,10 @@ required flags and tooltips come from the parser signatures and `:param` docstri
 is shown when no parser is selected or the string holds keys the parser does not declare.
 
 Parsers offered are exactly the CLI's registry (`get_parser_dict`). Functions in
-`parsers.py` that are not registered (`candidate_column_csv2`, `dominion5_10_Alaska2024`,
+`parsers.py` that are not registered (`candidate_column_csv2`,
 `santafe`, `hart_redondo_beach`) are unavailable in both.
 
-Directory-based parsers (`dominion5_10`, `choice_pro_plus`, `ess1`, `ess2`, `unisyn`) take a
+Directory-based parsers (`dominion5_10`, `dominion5_10_Alaska2024`, `choice_pro_plus`, `ess1`, `ess2`, `unisyn`) take a
 folder: use the Folder button next to the file picker.
 
 ## Files

@@ -2002,6 +2002,7 @@ parser_dict = {
     "dominion5_2": dominion5_2,
     "dominion5_4": dominion5_4,
     "dominion5_10": dominion5_10,
+    "dominion5_10_Alaska2024": dominion5_10_Alaska2024,
     "ess1": ess1,
     "ess2": ess2,
     "choice_pro_plus": choice_pro_plus,
